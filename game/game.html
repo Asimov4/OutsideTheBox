@@ -1,0 +1,175 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- saved from url=(0057)http://www.lbstone.com/reference/jquery/follow_mouse.html -->
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<title>Follow Mouse with jQuery</title>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.min.js" type="text/javascript"></script>
+<script type="text/javascript" src="js/jquery-1.2.3.pack.js"></script>
+<script type="text/javascript" src="js/jquery.timers.js"></script>
+
+<script type="text/javascript">
+jQuery(document).ready(function(){
+	
+	$.scores = { 
+	gameActivated : 0,
+    myPositionCount : 0,
+    timer : 0,
+    myPath : '',
+    started : 0,
+    startedOnSquare: 0,
+    startedOutside: 0,
+    savedx : 0,
+    savedy : 0,
+    savedirectionx : 0,
+    savedirectiony : 0,
+    changeDirectionx : 0,
+    changeDirectiony : 0
+}; 
+
+   // ============================================
+   // If you can read this, start from the top right corner of the game to win ;)
+   // ============================================
+   // ============================================
+   $("#game-box").css('visibility', 'hidden');
+   $("#game-box").children().css('visibility', 'hidden');
+   
+   $('#triangle').mousemove(function(e){
+   	result_message = '';
+   	if($.scores.startedOutside == 1) {
+   		result_message = 'You also got the bigger picture and noticed the big square!';
+   	}
+   	if($.scores.startedOnSquare == 1) {
+   		result_message = 'You also went right through the distracting spiral, straight to your goal.';
+   	}
+   	if($.scores.startedOnSquare == 0 && $.scores.startedOutside == 0) {
+   		result_message = 'Hmmmm but it does not seem that you started on a square other than a pixel.';
+   	}   	
+   	if ($.scores.changeDirectionx >= 3 && $.scores.changeDirectiony >= 3) {
+   		result_message = 'You were very precise in not touching the spiral and demonstrated attention to detail.';
+   	}
+      $('#status').html('Well done ! You took ' + $.scores.timer + ' ms to answer. ' + result_message);
+      $('#status2').val($.scores.myPath);
+      $.scores.myPositionCount=0;
+      $.scores.myPath = '';
+      $.scores.gameActivated = 0;
+      $("#counter").stopTime();
+      $("#game-box").animate({opacity: 0.5 }, "slow");
+      $("#game-box").slideUp('slow', function() {$(this).remove();});
+
+   });
+   
+   $('#game-box').mouseup(function(e){
+   		$.scores.startedOnSquare = 0;
+   		$.scores.startedOutside = 0;
+   		$.scores.started = 0;
+   		$.scores.changeDirectionx = 0;
+   		$.scores.changeDirectiony = 0;
+   	});
+   	
+   $('#square').mousemove(function(e){
+   		$.scores.startedOnSquare = 1;
+   		$.scores.started = 1;
+   		var x = e.pageX - this.offsetLeft;
+		var y = e.pageY - this.offsetTop;
+   	});
+   	
+
+   $("#game-box").mousemove(function(e){
+   	   	var x = e.pageX - this.offsetLeft;
+		var y = e.pageY - this.offsetTop;
+		if (x - 3 < 0 || y - 3 < 0 || x + 3 - 400 > 0 || y - 400 + 3 > 0) {
+		$.scores.startedOutside = 1;
+		$.scores.started = 1;
+		}
+   	
+   	if($.scores.gameActivated==1) {
+   		$.scores.myPositionCount++;
+		var x = e.pageX - this.offsetLeft;
+		var y = e.pageY - this.offsetTop;
+ 	   
+ 	   var directionx = $.scores.savedx - x;
+ 	   var directiony = $.scores.savedy - y;
+ 	   
+ 	    	   $('#status').html($.scores.changeDirectionx +', '+ $.scores.changeDirectiony);
+ 	   
+ 	   if($.scores.started == 1) {
+ 	   		if ((directionx < 0 && $.scores.savedirectionx >0) || (directionx > 0 && $.scores.savedirectionx < 0)) {
+ 	   	   $.scores.changeDirectionx++;
+ 	   		}
+ 	   		if ((directiony < 0 && $.scores.savedirectiony >0) || (directiony > 0 && $.scores.savedirectiony < 0)) {
+ 	   	   $.scores.changeDirectiony++;
+ 	   		}
+ 	   }
+ 	   if (directionx != 0) {
+ 	   $.scores.savedirectionx = directionx;
+ 	   }
+ 	   if (directiony != 0) {
+ 	   $.scores.savedirectiony = directiony;
+ 	   }
+ 	   $.scores.savedx = x;
+ 	   $.scores.savedy = y;
+    	$.scores.myPath +=  x +','+ y + ';';
+   	}
+   });
+   
+     $("#startgame").click(function(e){
+     	$(this).remove();
+   		 $("#counter").everyTime('1ms',function(i) {
+   		 		$("#game-box").css('visibility', 'visible');
+   		 		$("#game-box").children().css('visibility', 'visible');
+   		 		$.scores.timer = i;
+				$("#counter").html($.scores.timer + 'ms');
+		}, 0);
+   	$.scores.gameActivated = 1;
+   	});
+   	
+
+    $('#game-box').mousemove(function(e) {
+
+		if($.scores.started == 1) {	
+                //create img elements having pointer.png in their src 
+                // download it from 
+                // http://sites.google.com/site/dharmmotyar/Home/pointer.png 
+                pointer = $('<img>').attr({'src':'img/dot3.png'});
+
+                //and append them to document
+                $(document.body).append(pointer); 
+ 
+                //show them at mouse position & fade out slowly
+                pointer.css({
+                        'position':'absolute',
+                        top: e.pageY -2 ,    //offsets
+                        left: e.pageX -2   //offsets
+                    }).fadeOut(1500); 
+		}  
+    });
+   	
+})
+
+
+
+</script>
+
+</head>
+
+<body>
+Find the shortest path between the square and the triangle with your mouse. WARNING : this question is timed !
+<br />
+<input type=submit value='Start' id='startgame'>
+
+<div id="game-box" style="width: 400px; height: 400px; background: url('img/spiral.jpg') no-repeat right bottom;">
+<div style="width: 394px; height: 394px; border: 3px solid">
+	<div id="square" style="position: relative; left:30px; top:30px; width:15px; height: 15px; border: 3px solid"></div>
+	<div id="triangle" style="background-image:url('img/triangle.jpg');position: relative; left:224px; top:215px; width: 29px; height: 29px; "></div>
+	<div id="counter" style="position: relative; left:10px; top:325px;">ms</div> 
+</div>	
+</div>
+
+<h2 id="status">
+0, 0
+</h2>
+
+<input type=hidden id="status2" value=''>
+</h2>
+
+</body></html>
